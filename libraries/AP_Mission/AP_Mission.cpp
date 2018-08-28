@@ -1688,23 +1688,30 @@ void AP_Mission::set_adv_last_wp(void){
     }
 
     Mission_Command tmp;
-    if (!read_cmd_from_storage(get_prev_nav_cmd_index(), tmp)) {
-    	_adv_last_wp.set_and_save(1);
-        return;
-    }else{
+    Mission_Command tmp_proj;
 
-    	int32_t desired_course = wrap_180(get_bearing_cd(_nav_cmd.content.location, tmp.content.location)/100);
-    	tmp.content.location.alt = current_loc.alt;
+    if (!read_cmd_from_storage(get_prev_nav_cmd_index(), tmp)) {
+    	_adv_last_wp.set_and_save(get_prev_nav_cmd_index());
+        return;
+    }
+    else{
+
+    	tmp_proj = tmp;
+
+    	int32_t desired_course = (get_bearing_cd(tmp.content.location, _nav_cmd.content.location)/100);
+
+/*    	tmp.content.location.alt = current_loc.alt;
     	tmp.content.location.flags = current_loc.flags;
     	tmp.content.location.lat = current_loc.lat;
     	tmp.content.location.lng= current_loc.lng;
-    	tmp.content.location.options= current_loc.options;
+    	tmp.content.location.options= current_loc.options;*/
+
+    	float proj_proportion = location_path_proportion(current_loc, tmp.content.location, _nav_cmd.content.location);
+    	float distance_offset = proj_proportion*get_distance(tmp.content.location, _nav_cmd.content.location);
 
     	_adv_last_wp.set_and_save(get_prev_nav_cmd_index()==0 ? 1:get_prev_nav_cmd_index());
-
-    	location_update(tmp.content.location, desired_course, 100);
-
-    	replace_cmd(get_prev_nav_cmd_index(), tmp);
+    	location_update(tmp_proj.content.location, desired_course, distance_offset-100);
+    	replace_cmd(get_prev_nav_cmd_index(), tmp_proj);
 
     }
 
