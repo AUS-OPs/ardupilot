@@ -153,10 +153,10 @@ AP_Camera::trigger_pic(bool send_mavlink_msg)
 {
     setup_feedback_callback();
 
-    if((!_camera_switched_on) && (_control_level == 2)){
+/*    if((!_camera_switched_on) && (_control_level == 2)){
     	switch_on();
     	return;
-    }
+    }*/ //Removing to avoid camera triggers after RTL
 
     _image_index++;
     switch (_trigger_type)
